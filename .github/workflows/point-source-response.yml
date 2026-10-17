@@ -1,0 +1,30 @@
+name: Study preserved CNN point-source response
+on:
+  workflow_dispatch:
+  push:
+    branches: [research-point-source-response]
+permissions:
+  contents: read
+jobs:
+  injection:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install numpy==2.4.6 scipy==1.17.1 h5py==3.16.0 pytest==9.1.1 astropy==7.1.0
+      - run: python -m pip install 'torch==2.14.1+cpu' --index-url https://download.pytorch.org/whl/cpu
+      - run: python -m pytest -q tests/test_point_source_response.py
+      - run: python -u point_source_response.py
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: synthetic-source-flux-response
+          path: |
+            reproduced/injection_sites.csv
+            reproduced/source_flux_trials.csv
+            reproduced/source_flux_summary.csv
+          retention-days: 30
+          if-no-files-found: ignore
