@@ -9,7 +9,9 @@ appears, does the deconvolution retain its integrated brightness?
 
 The experiment generates a known 11×11 Gaussian star profile (sigma=1.2px,
 unit total flux) at 24 predetermined low-background sites in the
-held-out M51a galaxy. Artificial sources are spaced by at least 80 pixels.
+held-out M51a galaxy. Artificial sources are spaced by at least 80 pixels. In the current M51a run,
+the selected locations had local reference maxima from 0.1762 to 0.19131,
+so these are low-background *relative to the image*, not empty sky.
 
 - Original 2017 trained M51a 3-CNN weights, unmodified.
 - Same archived synthetic PSF family at `nr=5`.
