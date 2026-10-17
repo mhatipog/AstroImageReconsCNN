@@ -71,7 +71,7 @@ def run():
     original=np.asarray(getdata("data/M51a.fits"),dtype=np.float64)
     full=np.maximum(0,original/original.max())
     centers=blank_sky_centers(full[CROP])
-    print(f"Selected {len(centers)} blank-sky positions before any model evaluations",flush=True)
+    print(f"Selected {len(centers)} lowest-background positions from clean reference",flush=True)
     delta_field=injected_field(full.shape,centers)
     psf=airy_psf(64,5)
     blurred=fftconvolve(full,psf,mode="same")[CROP]
