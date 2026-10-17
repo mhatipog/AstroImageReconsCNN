@@ -1,0 +1,25 @@
+name: Check full-scale original Prox-TV baseline
+on:
+  workflow_dispatch:
+  push:
+    branches: [research-tv-fullscale-check]
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install numpy==2.4.6 scipy==1.17.1 astropy==7.1.0 scikit-image==0.25.2
+      - run: python -u audit_tv_fullscale.py
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: archived-tv-fullscale-m51a-comparison
+          path: reproduced/tv_fullscale_m51a.csv
+          retention-days: 30
+          if-no-files-found: ignore
