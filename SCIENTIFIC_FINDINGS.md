@@ -77,3 +77,36 @@ Archived experiment outputs: `measurements.csv` (9,216 rows), `summary.csv` (64 
 Supplementary galaxy-clustered differences: `galaxy_clustered_contrasts.csv`.
 
 **Status: exploratory observational-simulation experiment, not a peer-reviewed research result.**
+
+## Subsequent independent-response calibration (completed)
+
+A separately specified follow-up calibrated one effective source-response
+template for each CNN on **independent synthetic data**, then re-evaluated
+blind local flux fitting on all six held-out galaxies. At nominal SNR 20,
+mean absolute CNN flux error fell from **0.506 with the intrinsic Gaussian
+template to 0.212 with the calibrated response template**. Improvement
+occurred in all six galaxies. At SNR 10 it fell from 0.587 to 0.360
+(five of six improved); at SNR 5 improvement was small and inconsistent.
+
+This significantly changes the interpretation: much of the earlier
+unfavorable blind-fit comparison was **measurement-template misspecification**,
+not established destruction of astrophysical source flux. The CNN still
+needs phase, brightness and background-dependent calibration and a genuinely
+blind survey detection validation.
+
+Methods and limitations:
+https://github.com/mhatipog/AstroImageReconsCNN/blob/research-effective-response-calibration/RESULTS_EFFECTIVE_RESPONSE.md
+
+Completed numerical validation:
+https://github.com/mhatipog/AstroImageReconsCNN/actions/runs/39027503612
+
+### Independent execution check
+
+The initial six-galaxy study also completed as six separate GitHub runners:
+https://github.com/mhatipog/AstroImageReconsCNN/actions/runs/39027067237
+
+The Gaussian-noise summaries agree numerically to below 10^-6 in the
+reported mean absolute flux metrics. The photon-counting summaries
+differ slightly across executions (up to about 0.0093 in mean absolute
+fitted-flux error), so stochastic bitwise replay was **not** demonstrated
+for that arm. Both executions preserve the principal qualitative result.
