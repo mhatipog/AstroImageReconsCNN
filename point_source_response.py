@@ -34,17 +34,20 @@ RADII=(8,16)
 def blank_sky_centers(clean):
     # Explicitly exclude bright background structures. Predefined search
     # grid prevents cherry-picking based on the model's responses.
-    centers=[]
+    candidates=[]
     for y in range(112,912,80):
         for x in range(112,912,80):
             local=clean[y-20:y+21,x-20:x+21]
-            if local.max()<0.035:
-                centers.append((y,x))
-            if len(centers)==24:
-                return centers
-    if len(centers)<8:
-        raise ValueError("Too few blank-sky injection sites: "+str(len(centers)))
-    return centers
+            candidates.append((float(local.max()),y,x))
+    # Rank by the original reference image only; do not tune a threshold
+    # after seeing any model response. This is robust to plate background.
+    candidates.sort()
+    selected=candidates[:24]
+    if len(selected)<8:
+        raise ValueError("Too few predetermined grid locations")
+    print(f"Reference local-max range for chosen positions: "
+          f"{selected[0][0]:.5g} to {selected[-1][0]:.5g}",flush=True)
+    return [(y,x) for _,y,x in selected]
 
 def injected_field(full_shape,centers):
     field=np.zeros(full_shape,dtype=np.float64)
