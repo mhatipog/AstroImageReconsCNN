@@ -10,7 +10,7 @@ import csv
 import numpy as np
 import scipy.special
 from astropy.io.fits import getdata
-from scipy.io import loadmat
+from scipy.signal import fftconvolve
 import deconv
 
 GALAXIES=("M51a","M81","M101")
@@ -28,10 +28,18 @@ def psnr(err):
 def investigate():
     results=[]
     psf=deconv.get_PSF_airy(64,5)
-    for galaxy in GALAXIES:
+    for gi,galaxy in enumerate(GALAXIES):
         fits=np.asarray(getdata(Path("data")/f"{galaxy}.fits"),dtype=np.float64)
-        truth=np.maximum(0,fits/fits.max())[1200:2224,1200:2224][CROP,CROP]
-        observation=loadmat(Path("res")/f"none_1024x1024_PSF64_sigma0.010_{galaxy}.mat")["Irec"][CROP,CROP]
+        clean_full=np.maximum(0,fits/fits.max())
+        truth=clean_full[1200:2224,1200:2224][CROP,CROP]
+        # Generate the original study's Airy-blurred plus Gaussian-noisy
+        # observations independently for each galaxy. Only M51a has an
+        # archived 'none' reconstruction in the repository.
+        rng=np.random.default_rng(1985+gi)
+        degraded=fftconvolve(clean_full,psf,mode="same")[1200:2224,1200:2224]
+        degraded+=0.01*rng.standard_normal((1024,1024))
+        observation=degraded[CROP,CROP]
+        del fits,clean_full,degraded
         print(f"Galaxy {galaxy}: shape={truth.shape}",flush=True)
         for mu in LAMBDAS:
             reconstruction=deconv.vc_recons_tv(
