@@ -9,7 +9,12 @@ That is a verifiable difference in how the source selects parameters;
 it does **not**, by itself, show that the published Table I is wrong.
 
 The script `audit_tv_selection.py` investigates whether the distinction
-changes selected parameters or clean-image PSNR on three archived galaxies.
+changes selected parameters or clean-image PSNR on three original galaxies.
+For all three, it reconstructs the same original **synthetic observation
+process** (full-image normalization, Airy convolution and Gaussian noise
+with sigma=0.01, one reproducible draw per galaxy). The stored archived
+noisy image exists only for M51a, so these are fresh noise realizations,
+not an exact replay of the original Table I.
 
 To keep this a bounded exploratory experiment, it uses central
 **256x256** crops, 12 logarithmically spaced parameter candidates
