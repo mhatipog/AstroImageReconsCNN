@@ -1,0 +1,18 @@
+{
+  "4_gaussian": {
+    "rl": 12,
+    "wiener": 0.003
+  },
+  "4_photon_read": {
+    "rl": 12,
+    "wiener": 0.003
+  },
+  "5_gaussian": {
+    "rl": 5,
+    "wiener": 0.03
+  },
+  "5_photon_read": {
+    "rl": 5,
+    "wiener": 0.03
+  }
+}
