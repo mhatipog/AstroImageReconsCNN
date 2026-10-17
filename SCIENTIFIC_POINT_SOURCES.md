@@ -8,7 +8,7 @@ A different question matters for astronomical use: when a faint source
 appears, does the deconvolution retain its integrated brightness?
 
 The experiment generates a known 11×11 Gaussian star profile (sigma=1.2px,
-unit total flux) at up to 24 predetermined low-background sites in the
+unit total flux) at 24 predetermined low-background sites in the
 held-out M51a galaxy. Artificial sources are spaced by at least 80 pixels.
 
 - Original 2017 trained M51a 3-CNN weights, unmodified.
@@ -40,8 +40,9 @@ network redistributes or suppresses injected source flux.
   astrophysical populations.
 - No claims about false-positive detection rates or real survey photometry
   follow from this alone.
-- The sites are selected only from the pristine reference, before inspecting
-  CNN predictions; all 24 sites are included without selection by outcome.
+- The sites are the 24 locations with the lowest local maxima on a fixed
+  80-pixel-spaced grid, ranked using the pristine reference **before**
+  inspecting CNN predictions; no sites are excluded based on outcomes.
 
 Run after installing the CPU dependencies documented in
 `FULL_IMAGE_REPRODUCTION.md`, plus `astropy==7.1.0`:
