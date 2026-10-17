@@ -1,0 +1,25 @@
+name: Audit Prox-TV reference-selection criterion
+on:
+  workflow_dispatch:
+  push:
+    branches: [research-tv-selection-audit]
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install numpy==2.4.6 scipy==1.17.1 h5py==3.16.0 astropy==7.1.0 scikit-image==0.25.2
+      - run: python -u audit_tv_selection.py
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prox-tv-selection-pilot
+          path: reproduced/*.csv
+          retention-days: 30
+          if-no-files-found: ignore
