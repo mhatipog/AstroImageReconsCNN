@@ -1,0 +1,78 @@
+name: Six-galaxy fidelity — parallel verification
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [science-six-galaxy-parallel-check]
+    paths:
+      - scientific_fidelity_parallel.py
+      - aggregate_fidelity.py
+      - .github/workflows/scientific-fidelity-parallel.yml
+
+permissions:
+  contents: read
+
+jobs:
+  calibration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install numpy==2.4.6 scipy==1.17.1 h5py==3.16.0 scikit-image==0.26.0 pytest==9.1.1
+      - run: python -m pytest -q tests/test_scientific_fidelity.py
+      - run: python -u scientific_fidelity_benchmark.py --phase calibrate --selection-file /tmp/calibration_selection.json
+      - run: python -c 'import json; assert json.load(open("/tmp/calibration_selection.json")) == json.load(open("calibration_selection.json"))'
+  evaluation:
+    needs: calibration
+    strategy:
+      fail-fast: false
+      matrix:
+        galaxy: [M31, Hoag, M51a, M81, M101, M104]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install numpy==2.4.6 scipy==1.17.1 h5py==3.16.0 scikit-image==0.26.0 astropy==7.1.0
+      - run: python -m pip install 'torch==2.14.1+cpu' --index-url https://download.pytorch.org/whl/cpu
+      - name: Run frozen galaxy test conditions without any retuning
+        env:
+          OPENBLAS_NUM_THREADS: '1'
+          OMP_NUM_THREADS: '2'
+        run: python -u scientific_fidelity_parallel.py --phase evaluate --selection-file calibration_selection.json --galaxy ${{ matrix.galaxy }}
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: galaxy-${{ matrix.galaxy }}
+          path: results/${{ matrix.galaxy }}/measurements.csv
+          if-no-files-found: error
+          retention-days: 30
+  aggregate:
+    needs: evaluation
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: galaxy-*
+          path: artifacts
+          merge-multiple: false
+      - run: python -m pip install numpy==2.4.6 scipy==1.17.1 scikit-image==0.26.0 h5py==3.16.0
+      - run: python -u aggregate_fidelity.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: aggregated-six-galaxy-fidelity
+          path: |
+            results/summary.csv
+            results/measurements.csv
+          retention-days: 30
+          if-no-files-found: error
