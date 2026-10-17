@@ -12,9 +12,18 @@ import numpy as np
 import torch
 from astropy.io.fits import getdata
 from scipy.signal import fftconvolve
+from scipy.special import j1
 
 from full_image_inference import load_layers, reconstruct
-from psf_noise_sensitivity import airy_psf
+
+def airy_psf(n, nr):
+    axis = np.linspace(-1, 1, n)
+    xx, yy = np.meshgrid(axis, axis)
+    radius = np.hypot(xx, yy) * np.pi * nr
+    airy = np.divide(j1(radius), radius,
+                     out=np.full_like(radius, 0.5), where=radius != 0)
+    psf = airy**2
+    return psf/psf.sum()
 
 MODEL=Path("models/32x32_10x10-64_6x6-16_5x5-1_PSF64_sigma0.010_M51a.h5")
 CROP=(slice(1200,2224),slice(1200,2224))
