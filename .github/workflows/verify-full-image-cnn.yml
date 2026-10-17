@@ -1,0 +1,37 @@
+name: Verify complete archived CNN reconstruction
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - restore-full-image-cnn-inference
+
+permissions:
+  contents: read
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install scientific dependencies
+        run: python -m pip install 'numpy>=1.26,<3' 'scipy>=1.11,<2' 'h5py>=3.10,<4' pytest
+      - name: Install CPU PyTorch
+        run: python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+      - name: Check patch-tiling mathematics
+        run: python -m pytest -q tests/test_full_image_inference.py
+      - name: Verify sample legacy inference
+        run: python validate_legacy_inference.py
+      - name: Reconstruct and verify all M51a pixels
+        run: python -u full_image_inference.py --verify --tile-size 196 --threads 2
+      - name: Upload reconstruction
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m51a-legacy-3cnn-full-reconstruction
+          path: reproduced/m51a_3cnn_modern.mat
+          retention-days: 14
