@@ -17,3 +17,12 @@ The CSV is written to `reproduced/table1.csv`. The command fails when saved resu
 **PSNR detail:** The original paper's Table I script computes aggregate PSNR as `-10 log10(mean(MSE))`, not `mean(-10 log10(MSE))`.
 
 **Limitations:** Archived timings refer to the author's original hardware. This only recovers historical results, not modern runtime or CNN predictive performance. Cite Flamary (2017); the original repository is MIT-licensed.
+
+## Re-rendering Figure 3
+
+```sh
+python -m pip install 'matplotlib>=3.8,<4' 'astropy>=6,<9'
+python reproduce_figure3.py
+```
+
+This reads the archived M51a FITS image and each original `res/*_M51a.mat` file. It asserts that 1-CNN and 3-CNN are numerically distinct and writes `reproduced/figure3.png`. This is a new presentation of the original saved images with a consistent grayscale range; it is not a retrained result and is not pixel-identical to the published figure layout. In particular, the original script accidentally plotted the 1-CNN array in both CNN panels.
