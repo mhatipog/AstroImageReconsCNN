@@ -1,0 +1,18 @@
+name: Validate legacy CNN inference
+on:
+  workflow_dispatch:
+  push:
+    branches: [investigate-legacy-cnn-inference]
+permissions:
+  contents: read
+jobs:
+  weights:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install 'numpy>=1.26,<3' 'scipy>=1.11,<2' 'h5py>=3.10,<4'
+      - run: python validate_legacy_inference.py
