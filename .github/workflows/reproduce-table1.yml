@@ -1,0 +1,31 @@
+name: Reproduce 2017 Table I
+on:
+  workflow_dispatch:
+  push:
+    branches: [reproduce-eusipco2017-results]
+  pull_request:
+    paths:
+      - reproduce_table1.py
+      - tests/test_reproduce_table1.py
+      - res/**
+      - .github/workflows/reproduce-table1.yml
+permissions:
+  contents: read
+jobs:
+  table1:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install 'numpy>=1.26,<3' 'scipy>=1.11,<2' pytest
+      - run: python -m pytest -q tests/test_reproduce_table1.py
+      - run: python reproduce_table1.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: table1-report
+          path: reproduced/table1.csv
+          if-no-files-found: ignore
