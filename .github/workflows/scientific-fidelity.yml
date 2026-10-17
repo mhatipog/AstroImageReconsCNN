@@ -1,0 +1,52 @@
+name: Six-galaxy scientific fidelity benchmark
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - science-six-galaxy-fidelity-benchmark
+    paths:
+      - scientific_fidelity_benchmark.py
+      - calibration_selection.json
+      - tests/test_scientific_fidelity.py
+      - .github/workflows/scientific-fidelity.yml
+      - BENCHMARK_PROTOCOL.md
+
+permissions:
+  contents: read
+
+jobs:
+  held-out-study:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install scientific tools
+        run: python -m pip install numpy==2.4.6 scipy==1.17.1 h5py==3.16.0 scikit-image==0.26.0 astropy==7.1.0 pytest==9.1.1
+      - name: Install tested CPU-only PyTorch
+        run: python -m pip install 'torch==2.14.1+cpu' --index-url https://download.pytorch.org/whl/cpu
+      - name: Validate experimental primitives
+        run: python -m pytest -q tests/test_scientific_fidelity.py
+      - name: Recalibrate on independent synthetic scenes
+        run: python -u scientific_fidelity_benchmark.py --phase calibrate --selection-file /tmp/calibration_selection.json
+      - name: Confirm hyperparameters were frozen before test
+        run: python -c 'import json; assert json.load(open("/tmp/calibration_selection.json")) == json.load(open("calibration_selection.json"))'
+      - name: Evaluate all six original held-out galaxy models
+        env:
+          OPENBLAS_NUM_THREADS: '1'
+          OMP_NUM_THREADS: '2'
+        run: python -u scientific_fidelity_benchmark.py --phase evaluate --selection-file calibration_selection.json
+      - name: Preserve source-level measurements
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: six-galaxy-scientific-fidelity
+          path: |
+            results/calibration.csv
+            results/measurements.csv
+            results/summary.csv
+          retention-days: 30
+          if-no-files-found: ignore
